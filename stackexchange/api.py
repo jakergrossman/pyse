@@ -10,69 +10,88 @@ This module implements the Stack Exchange API wrapper.
 import requests
 import json
 from sys import maxsize
+from string import Formatter
 
 from .utils import get_json, add_url_parameter
-from .types import base_filters
-from .types import queries, base_filters
+from .types import queries, base_filters, default_query_args
 
 api_base_url = "https://api.stackexchange.com/2.2/"
 
-def query_questions(site, page=1, pagesize=30, fromdate=0, todate=maxsize,
-                    order="desc", sort="activity", min=-maxsize - 1,
-                    max=maxsize, tagged=[]):
+# FIXME: Needs tests
+def query(site, endpoint, **parameters):
     # FIXME: Defaults, Descriptions
     """
-    Query the Stack Exchange API for questions
+    Query the Stack Exchange API for questions.
 
     :param site: Stack Exchange site to query
-    :param page: (optional) page of results to return. defaults to 1
-    :param pagesize: (optional) size of each page of results. defaults to 30
-    :param fromdate: (optional) start of time range for results, inclusive. stored as a
-        unix timestamp
-    :param todate: (optional) end of time range for results, inclusive. stored
-        as a unix timestamp
-    :param order: (optional) order to sort results in. one of `desc`, `asc`
-    :param sort: (optional) criteria with which to sort items.
-        one of `activity`, `votes`, `creation`, `hot`, `week`, `month`.
-        defaults to `activity`
-    :param min: (optional) minimum value of the field specified by sort.
-        defaults to -sys.maxsize - 1
-    :param max: (optional) maximum value of the field specified by sort
-        defaults to sys.maxsize
-    :param tagged: (optional) list of tags to constrain questions to. this is an
-        AND constraint, so all tags in list must match. thus, passing
-        more than 5 flags will always result in zero results
+    :param endpoint: URL endpoint of query
+    :param parameters: keyword arguments for parameters in API request. if any
+        keyword arguments match a default defined in
+        `stackexchange.types.default_query_args`, it is ignored for the purpose
+        of the query.
+
+    Keyword Arguments:
+        :keyword page: page of results to return. defaults to 1
+        :keyword pagesize: size of each page of results. defaults to 30
+        :keyword fromdate: start of time range for results, inclusive. stored as a
+            unix timestamp
+        :keyword todate: end of time range for results, inclusive. stored
+            as a unix timestamp
+        :keyword order: order to sort results in. one of `desc`, `asc`
+        :keyword sort: criteria with which to sort items.
+            one of `activity`, `votes`, `creation`, `hot`, `week`, `month`.
+            defaults to `activity`
+        :keyword min: minimum value of the field specified by sort.
+            defaults to -sys.maxsize - 1
+        :keyword max: maximum value of the field specified by sort
+            defaults to sys.maxsize
+        :keyword tagged: list of tags to constrain questions to. this is an
+            AND constraint, so all tags in list must match. thus, passing
+            more than 5 flags will always result in zero results
+
+    :raises ValueError: if the passed URL endpoint expects a specific keyword
+        argument, but did not get one. e.g. query_types.questions.by_id.ALL
+        expects an `ids` keyword argument.
     """
-    url = api_base_url + "questions?site=" + site
 
-    if page != 1:
-        url = add_url_parameter(url, "page", page)
+    # get format argument of endpoint. e.g. the `{ids}` in questions/`{ids}`
+    format_args = [tup[1] for tup in Formatter().parse(endpoint) if tup[1]]
+    format_dict = {}
 
-    if pagesize != 30:
-        url = add_url_parameter(url, "pagesize", pagesize)
+    missing_args = []
+    for f in format_args:
+        # check which format arguments are missing
+        if f not in parameters.keys():
+            missing_args.append(f)
+        else:
+            # join lists with semicolons for API use
+            if isinstance(parameters[f], list):
+                format_dict[f] = ";".join(parameters[f])
+            else:
+                format_dict[f] = parameters[f]
 
-    if fromdate != 0:
-        url = add_url_parameter(url, "fromdate", fromdate)
+    # if format arguments are missing, throw error
+    if len(missing_args) > 0:
+        if len(missing_args) > 1:
+            formatted_args = ', '.join("'" + a + "'" for a in missing_args)
+            raise ValueError(f"API endpoint '{endpoint}' missing required keyword arguments {formatted_args}")
+        else:
+            raise ValueError(f"API endpoint '{endpoint}' missing required keyword argument '{missing_args[0]}'")
 
-    if todate != maxsize:
-        url = add_url_parameter(url, "todate", todate)
+    # format endpoint
+    method = queries.method(endpoint)
+    endpoint = endpoint.format(**format_dict)
 
-    if order != "desc":
-        url = add_url_parameter(url, "order", order)
+    # build query URL with no parameters
+    url = api_base_url + endpoint + "?site=" + site
 
-    if sort != "activity":
-        url = add_url_parameter(url, "activity", activity)
+    # append non-default parameters
+    for arg, value in parameters.items():
+        if default_query_args[arg.upper()] != value and arg not in format_args:
+            url = add_url_parameter(url, arg, value)
 
-    if min != -maxsize - 1:
-        url = add_url_parameter(url, "min", min)
-
-    if max != maxsize:
-        url = add_url_parameter(url, "max", max)
-
-    if tagged != []:
-        url = add_url_parameter(url, "tagged", ";".join(tagged))
-
-    return url
+    if method == "GET":
+        return get_json(url)
 
 def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=False):
     """
