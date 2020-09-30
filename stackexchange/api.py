@@ -12,9 +12,9 @@ import json
 from sys import maxsize
 
 from .utils import get_json, add_url_parameter
-from .models import base_filters
+from .types import base_filters
 
-base_url = "https://api.stackexchange.com/2.2/"
+api_base_url = "https://api.stackexchange.com/2.2/"
 
 def query_questions(site, page=1, pagesize=30, fromdate=0, todate=maxsize,
                     order="desc", sort="activity", min=-maxsize - 1,
@@ -23,25 +23,26 @@ def query_questions(site, page=1, pagesize=30, fromdate=0, todate=maxsize,
     """
     Query the Stack Exchange API for questions
 
-    Args:
-        site (string):  the Stack Exchange site to query
-        page (int):     the page of results to return. defaults to 1
-        pagesize (int): the size of each page of results. defaults to 30
-        fromdate (int): FIXME
-        todate (int):   FIXME
-        order (string): order to sort results in. one of `desc`, `asc`
-        sort (string):  the criteria with which to sort items.
-            one of `activity`, `votes`, `creation`, `hot`, `week`, `month`.
-            defaults to `activity`
-        min (int):      the minimum value of the field specified by sort.
-            defaults to -sys.maxsize - 1
-        max (int):      the maximum value of the field specified by sort
-            defaults to sys.maxsize
-        tagged (list):  the list of tags to constrain questions to. this is an
-            AND constraint, so all tags in list must match. thus, passing
-            more than 5 flags will always result in zero results
+    :param site: Stack Exchange site to query
+    :param page: (optional) page of results to return. defaults to 1
+    :param pagesize: (optional) size of each page of results. defaults to 30
+    :param fromdate: (optional) start of time range for results, inclusive. stored as a
+        unix timestamp
+    :param todate: (optional) end of time range for results, inclusive. stored
+        as a unix timestamp
+    :param order: (optional) order to sort results in. one of `desc`, `asc`
+    :param sort: (optional) criteria with which to sort items.
+        one of `activity`, `votes`, `creation`, `hot`, `week`, `month`.
+        defaults to `activity`
+    :param min: (optional) minimum value of the field specified by sort.
+        defaults to -sys.maxsize - 1
+    :param max: (optional) maximum value of the field specified by sort
+        defaults to sys.maxsize
+    :param tagged: (optional) list of tags to constrain questions to. this is an
+        AND constraint, so all tags in list must match. thus, passing
+        more than 5 flags will always result in zero results
     """
-    url = base_url + "questions?site=" + site
+    url = api_base_url + "questions?site=" + site
 
     if page != 1:
         url = add_url_parameter(url, "page", page)
@@ -76,23 +77,19 @@ def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=Fa
     """
     Creates a filter string
 
-    Args:
-        base:     base filter
-        includes: list of fields to include, in addition to the base filter
-        excludes: list of fields to exclude from the base filter
-        unsafe:   whether or not the returned filter
-                  string is inline-able in HTML without
-                  script-injection concerns
-    Returns:
-        string: a filter to pass to other API queries
+    :param base:     base filter
+    :param includes: list of fields to include, in addition to the base filter
+    :param excludes: list of fields to exclude from the base filter
+    :param unsafe:   whether or not the returned filter
+              string is inline-able in HTML without
+              script-injection concerns
+    :returns string: a filter to pass to other API queries
 
-    Raises:
-        ValueError: If `base` is not a valid base filter
+    :raises ValueError: If `base` is not a valid base filter
     """
     unsafe_string  = "true" if unsafe else "false"
-    url = base_url + "filters/create?unsafe=" + unsafe_string
-
-    # append applicable paramaters
+    url = api_base_url + "filters/create?unsafe=" + unsafe_string
+    # append applicable parameters
     if len(includes) > 0:
         include_string = ";".join(includes)
         url += "include=" + include_string
