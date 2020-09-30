@@ -13,6 +13,7 @@ from sys import maxsize
 
 from .utils import get_json, add_url_parameter
 from .types import base_filters
+from .types import queries, base_filters
 
 api_base_url = "https://api.stackexchange.com/2.2/"
 
