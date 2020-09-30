@@ -58,25 +58,22 @@ def query(site, endpoint, **parameters):
     format_args = [tup[1] for tup in Formatter().parse(endpoint) if tup[1]]
     format_dict = {}
 
-    missing_args = []
-    for f in format_args:
-        # check which format arguments are missing
-        if f not in parameters.keys():
-            missing_args.append(f)
-        else:
-            # join lists with semicolons for API use
-            if isinstance(parameters[f], list):
-                format_dict[f] = ";".join(parameters[f])
-            else:
-                format_dict[f] = parameters[f]
-
     # if format arguments are missing, throw error
+    missing_args = [f for f in format_args if f not in parameters.keys()]
     if len(missing_args) > 0:
         if len(missing_args) > 1:
-            formatted_args = ', '.join("'" + a + "'" for a in missing_args)
-            raise ValueError(f"API endpoint '{endpoint}' missing required keyword arguments {formatted_args}")
+            quoted_arg_names = ', '.join("'" + a + "'" for a in missing_args)
+            raise ValueError(f"API endpoint '{endpoint}' missing required keyword arguments {quoted_arg_names}")
         else:
             raise ValueError(f"API endpoint '{endpoint}' missing required keyword argument '{missing_args[0]}'")
+
+    for f in format_args:
+        # join lists with semicolons for API use
+        if isinstance(parameters[f], list):
+            format_dict[f] = ";".join(parameters[f])
+        else:
+            format_dict[f] = parameters[f]
+
 
     # format endpoint
     method = queries.method(endpoint)
