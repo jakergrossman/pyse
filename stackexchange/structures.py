@@ -1,5 +1,5 @@
 """
-stackexchange.models
+stackexchange.structures
 ~~~~~~~~~~~~~~~~~~~~
 
 This module contains the structures used in the Stack Exchange API wrapper
