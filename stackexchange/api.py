@@ -2,7 +2,7 @@
 stackexchange.api
 ~~~~~~~~~~~~~~~~~
 
-This module implements the Stack Exchange API.
+This module implements the Stack Exchange API wrapper.
 
 :copyright: (c) 2020 by Jake Grossman
 :license: MIT, see LICENSE for more details.
