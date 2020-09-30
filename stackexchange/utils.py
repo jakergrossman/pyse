@@ -1,3 +1,13 @@
+"""
+stackexchange.utils
+~~~~~~~~~~~~~~~~~~~
+
+This module contains utility functions for the Stack Exchange wrapper
+
+:copyright: (c) 2020 by Jake Grossman
+:license: MIT, see LICENSE for more details.
+"""
+
 import requests
 import json
 

@@ -2,7 +2,10 @@
 stackexchange.models
 ~~~~~~~~~~~~~~~~~~~~
 
-This module contains the primary objects that power the StackEchange API
+This module contains the primary objects that power the Stack Exchange API
+
+:copyright: (c) 2020 by Jake Grossman
+:license: MIT, see LICENSE for more details.
 """
 
 from .structures import LookupDict

@@ -1,3 +1,12 @@
+"""
+stackexchange.api
+~~~~~~~~~~~~~~~~~
+
+This module implements the Stack Exchange API.
+
+:copyright: (c) 2020 by Jake Grossman
+:license: MIT, see LICENSE for more details.
+"""
 import requests
 import json
 from sys import maxsize
