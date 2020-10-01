@@ -7,7 +7,6 @@ This module contains the structures used in the Stack Exchange API wrapper
 :copyright: (c) 2020 by Jake Grossman
 :license: MIT, see LICENSE for more details.
 """
-from difflib import SequenceMatcher
 # FIXME: Needs tests
 class DictTree(dict):
     """

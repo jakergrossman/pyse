@@ -336,6 +336,7 @@ A dictionary tree of URL endpoints for API query types.
 """
 queries = _query_endpoints
 
+# TODO FIXME: somehow setup method lookup within class
 # attach method lookup table
 setattr(queries, "_method", _method_lookup)
 

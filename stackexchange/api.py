@@ -50,7 +50,7 @@ def query(site, endpoint, **parameters):
             more than 5 flags will always result in zero results
 
     :raises ValueError: if the passed URL endpoint expects a specific keyword
-        argument, but did not get one. e.g. query_types.questions.by_id.ALL
+        argument, but did not get one. e.g. queries.questions.by_id.ALL
         expects an `ids` keyword argument.
     """
 
@@ -70,7 +70,7 @@ def query(site, endpoint, **parameters):
     for f in format_args:
         # join lists with semicolons for API use
         if isinstance(parameters[f], list):
-            format_dict[f] = ";".join(parameters[f])
+            format_dict[f] = ";".join([str(x) for x in parameters[f]])
         else:
             format_dict[f] = parameters[f]
 
