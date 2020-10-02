@@ -68,7 +68,6 @@ class LookupDict(dict):
 
         return self
 
-    # FIXME: This is inefficient, find better way
     def path(self, target):
         """
         Get property path given a target.
@@ -133,6 +132,10 @@ class URLTree(LookupDict):
 
                 FIXME: MWE from types
         """
+
+        # internal method dictionary, used for self.method()
+        self._method = LookupDict()
+
         # internal variable used for __repr__
         if dictionary is not None:
             for key, value in {k: v for k, v in dictionary.items() if k is not None}.items():
@@ -142,7 +145,8 @@ class URLTree(LookupDict):
                 else:
                     # this is a leaf node of the dictionary,
                     if method is not None:
-                        setattr(self, key.upper(), method)
+                        # add to internal method dictionary
+                        setattr(self._method, value, method)
                     else:
                         setattr(self, key.upper(), value)
         super(URLTree, self).__init__(name=name)
@@ -151,9 +155,12 @@ class URLTree(LookupDict):
         return f"<url_tree {self.name}>"
 
     def method(self, target):
-        target_path = self.path(target)
-        temp = self.__dict__['_method']
-        for component in target_path:
-            temp = temp[component]
+        """
+        Get HTTP method of target
 
-        return temp
+        :param target: target URL
+
+        :returns : HTTP method of target URL
+        """
+
+        return self._method[target]
