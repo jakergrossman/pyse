@@ -109,7 +109,7 @@ def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=Fa
     # append applicable parameters
     if len(includes) > 0:
         include_string = ";".join(includes)
-        url += "include=" + include_string
+        url += "&include=" + include_string
 
     if len(excludes) > 0:
         exclude_string = ";".join(excludes)
