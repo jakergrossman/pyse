@@ -8,28 +8,32 @@ This module contains the structures used in the Stack Exchange API wrapper
 :license: MIT, see LICENSE for more details.
 """
 # FIXME: Needs tests
-class DictTree(dict):
+class LookupDict(dict):
     """
-    Dictionary tree, where each node is either a direct mapping to a value
-    (leaf node), or a dictionary sub-tree (internal node).
+    A dictionary lookup object.
     """
-    def __init__(self, dictionary=None, name=None):
-        # FIXME: Needs docstring
+    def __init__(self, dictionary=None, name=None, capitalize_leaves=False):
+        """
+        Create a new LookupDict
+
+        :param dictionary:      dictionary to initialize LookupDict with
+        :param name:            internal name of LookupDict
+        :param capitalize_leaves: whether or not to capitalize leaves.
+        """
         # internal variable used for __repr__
         self._name = name
         if dictionary is not None:
             for key, value in {k: v for k, v in dictionary.items() if k is not None}.items():
                 if isinstance(value, dict):
                     # recursively initialize internal dict
-                    setattr(self, key, DictTree(dictionary=value, name=name + '/' + key))
+                    setattr(self, key, LookupDict(dictionary=value, name=name + '/' + key))
                 else:
                     # this is a leaf node of the dictionary,
-                    setattr(self, key.upper(), value)
-        super(DictTree, self).__init__()
-
+                    setattr(self, key.upper() if capitalize_leaves else key, value)
+        super(LookupDict, self).__init__()
 
     def __repr__(self):
-        return f"<dict_tree '{self._name}'>"
+        return f"<lookup '{self._name}'>"
 
     def __getitem__(self, key):
         # allow fallthrough, default to None
@@ -39,27 +43,40 @@ class DictTree(dict):
         return self.__dict__.get(key, default)
 
     def keys(self):
-        # FIXME: Needs docstring
-        # filter out all keys starting with an underscore, those
-        # are not directly exposed to the user
+        """
+        Shadows dict.keys(). Omits keys starting with an underscore, those are
+        not directly exposed
+        """
         return {k: v for k,v in self.__dict__.items() if not k.startswith("_")}.keys()
-        return self.__dict__.update(kwargs)
 
     def update(self, other):
+        """
+        Updates dictionary with the elements from another dictionary.
+
+        :param other: dictionary to update with
+        """
         for key in other.__dict__:
             if key in self.__dict__:
                 # recursively update dictionaries
-                if isinstance(self[key], DictTree) and isinstance(other[key], DictTree):
+                if isinstance(self[key], LookupDict) and isinstance(other[key], LookupDict):
                     self[key].update(other[key])
                 elif self[key] != other[key]:
-                    # clobber old key
+                    # clobber old attribute
                     setattr(self, key, other[key])
             else:
                 setattr(self, key, other[key])
 
         return self
 
+    # FIXME: This is inefficient, find better way
     def path(self, target):
+        """
+        Get property path given a target.
+
+        :param target: value to look for
+
+        :returns: a list of property names
+        """
         for k,v in self.__dict__.items():
             if isinstance(v, dict):
                 p = v.path(target)
@@ -69,7 +86,7 @@ class DictTree(dict):
                 return [k]
 
 # FIXME: Needs tests
-class URLTree(DictTree):
+class URLTree(LookupDict):
     """
     A tree of URL endpoints.
     """
@@ -129,6 +146,9 @@ class URLTree(DictTree):
                     else:
                         setattr(self, key.upper(), value)
         super(URLTree, self).__init__(name=name)
+
+    def __repr__(self):
+        return f"<url_tree {self.name}>"
 
     def method(self, target):
         target_path = self.path(target)

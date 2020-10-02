@@ -9,7 +9,7 @@ This modules contains dictionary for types of objects in the Stack Exchange API
 """
 
 from sys import maxsize
-from .structures import DictTree, URLTree
+from .structures import LookupDict, URLTree
 
 _query_types = {
     "GET": {
@@ -353,7 +353,8 @@ _user_classes = {
 """
 A dictionary tree of User types
 """
-user_classes = DictTree(dictionary=_user_classes, name="user_classes")
+user_classes = LookupDict(dictionary=_user_classes, name="user_classes",
+                          capitalize_leaves=True)
 
 _base_filters = {
     "default": "default",  # default for each query type
@@ -365,7 +366,8 @@ _base_filters = {
 """
 A dictionary tree containing the builtin_filters
 """
-base_filters = DictTree(dictionary=_base_filters, name="base_filters")
+base_filters = LookupDict(dictionary=_base_filters, name="base_filters",
+                          capitalize_leaves=True)
 
 _default_query_args = {
     "page":     1,
@@ -379,5 +381,5 @@ _default_query_args = {
     "tagged":   []
 }
 
-default_query_args = DictTree(dictionary=_default_query_args,
-                              name="default_query_args")
+default_query_args = LookupDict(dictionary=_default_query_args,
+                              name="default_query_args", capitalize_leaves=True)
