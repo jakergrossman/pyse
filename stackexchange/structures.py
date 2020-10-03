@@ -18,10 +18,10 @@ class LookupDict(dict):
 
         :param dictionary:      dictionary to initialize LookupDict with
         :param name:            internal name of LookupDict
-        :param capitalize_leaves: whether or not to capitalize leaves.
+        :param capitalize_leaves: whether or not to capitalize leaf keys.
         """
         # internal variable used for __repr__
-        self._name = name
+        self._name = name if name else ""
         if dictionary is not None:
             for key, value in {k: v for k, v in dictionary.items() if k is not None}.items():
                 if isinstance(value, dict):
@@ -89,34 +89,16 @@ class URLTree(LookupDict):
     """
     A tree of URL endpoints.
     """
-    def __init__(self, dictionary=None, name=None, method=None):
+    def __init__(self, dictionaries=None, name=None, method=None):
         """
         Create a new URL Tree
 
-        :param dictionary: a dictionary of URLs to use to generate the tree. can
-            be nested. URLs can have format parameters in them. Each leaf node
-            of the dictionary is uppercased in the URLTree to indicate that it
-            is a string value:
+        :param dictionaries: a list of tuples (a, b), where a is an HTTP request
+            type, and b is a LookupDict of URLs that use that HTTP method. This
+            is used to generate the internal _method LookupDict to use as a
+            lookup table. an example input:
 
-                # url dictionary
-                urls = {
-                    "shop": "site.com/shop",
-                    "cart": {
-                        "page": "site.com/cart",
-                        "checkout": "site.com/cart/checkout"
-                    },
-                    "user": "site.com/user/{id}"
-                }
-
-                # URLTree
-                urls = {
-                    "SHOP": "site.com/shop",
-                    "cart": {
-                        "PAGE": "site.com/cart",
-                        "CHECKOUT": "site.com/cart/checkout"
-                    },
-                    "USER": "site.com/user/{id}"
-                }
+            TODO FIXME: input example
 
             each node of the tree can be accessed as a property or by subscript:
 
@@ -125,34 +107,46 @@ class URLTree(LookupDict):
                 urls.SHOP           "site.com/shop"
                 urls['SHOP']        "site.com/shop"
                 urls.cart.CHECKOUT  "site.com/cart/checkout"
+
         :param name: name of the URLTree
         :param method: generate a method dictionary instead for the specified
-            URL tree. Can be used to create a URLDict with a 'method_lookup'
-            field:
+            URL tree.
 
-                FIXME: MWE from types
         """
-
-        # internal method dictionary, used for self.method()
         self._method = LookupDict()
+        if dictionaries is not None:
+            if len(dictionaries) > 1:
+                for d_method, d in dictionaries:
+                    self.update(URLTree([d]))
+                    self._method.update(URLTree([d], method=d_method)._method)
+            elif len(dictionaries) == 1:
+                dictionary = dictionaries[0]
 
-        # internal variable used for __repr__
-        if dictionary is not None:
-            for key, value in {k: v for k, v in dictionary.items() if k is not None}.items():
-                if isinstance(value, dict):
-                    # recursively initialize internal dict
-                    setattr(self, key, URLTree(dictionary=value, name=name + '/' + key if name else None, method=method))
-                else:
-                    # this is a leaf node of the dictionary,
-                    if method is not None:
-                        # add to internal method dictionary
-                        setattr(self._method, value, method)
-                    else:
-                        setattr(self, key.upper(), value)
+                # internal variable used for __repr__
+                if dictionary is not None:
+                    for key, value in {k: v for k, v in dictionary.items() if k is not None}.items():
+                        if isinstance(value, dict):
+                            # recursively initialize internal dict
+                            internal_node = URLTree(dictionaries=[value],
+                                                    name=name + '/' + key if
+                                                    name else None,
+                                                    method=method)
+
+                            setattr(self, key, internal_node)
+                            if method is not None:
+                                self._method.update(internal_node._method)
+                        else:
+                            # this is a leaf node of the dictionary,
+                            if method is not None:
+                                # add to internal method dictionary
+                                setattr(self._method, value, method)
+                            else:
+                                setattr(self, key.upper(), value)
+
         super(URLTree, self).__init__(name=name)
 
     def __repr__(self):
-        return f"<url_tree {self.name}>"
+        return f"<url_tree {self._name}>"
 
     def method(self, target):
         """
@@ -162,5 +156,4 @@ class URLTree(LookupDict):
 
         :returns : HTTP method of target URL
         """
-
         return self._method[target]

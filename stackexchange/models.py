@@ -8,8 +8,6 @@ This module contains the primary objects that power the Stack Exchange API
 :license: MIT, see LICENSE for more details.
 """
 
-from .structures import DictTree
-
 class User(object):
     def __init__(user_class, user_info):
         """

@@ -2,7 +2,7 @@
 stackexchange.types
 ~~~~~~~~~~~~~~~~~~~
 
-This modules contains dictionary for types of objects in the Stack Exchange API
+This module contains lookup dictionaries for types of objects in the Stack Exchange API
 
 :copyright: (c) 2020 by Jake Grossman
 :license: MIT, see LICENSE for more details.
@@ -314,31 +314,14 @@ _query_types = {
     }
 }
 
-# Method lookup dictionaries
-_get_lookup = URLTree(dictionary=_query_types["GET"], method="GET",
-                      name="_get_lookup")
-_post_lookup = URLTree(dictionary=_query_types["POST"], method="POST",
-                       name="_post_lookup")
-
-# Endpoint lookup dictionaries
-_get_endpoints = URLTree(dictionary=_query_types["GET"], name="get_endpoints")
-_post_endpoints = URLTree(dictionary=_query_types["POST"],
-                          name="post_endpoints")
-
-# combine method lookup dictionaries
-_method_lookup = _get_lookup.update(_post_lookup)
-
-# combine endpoints lookup dictionaries
-_query_endpoints = _get_endpoints.update(_post_endpoints)
 
 """
 A dictionary tree of URL endpoints for API query types.
 """
-queries = _query_endpoints
-
-# TODO: Resolve this programmatically
-# set name, was clobbered in creation
-setattr(queries, "_name", "queries")
+queries = URLTree(
+    dictionaries = [(method, url_dict) for method, url_dict in _query_types.items()],
+    name = "queries"
+)
 
 _user_classes = {
     "user": "user",
