@@ -19,7 +19,7 @@ from .queries import queries
 api_base_url = "https://api.stackexchange.com/2.2/"
 
 # FIXME: Needs tests
-def query(site, endpoint, **parameters):
+def query(endpoint, site=None, **parameters):
     # FIXME: Defaults, Descriptions
     """
     Query the Stack Exchange API.
@@ -81,7 +81,10 @@ def query(site, endpoint, **parameters):
     endpoint = endpoint.format(**format_dict)
 
     # build query URL with no parameters
-    url = api_base_url + endpoint + "?site=" + site
+    url = api_base_url + endpoint
+
+    if site is not None:
+        url = add_url_parameter(url, "site", site)
 
     # append non-default parameters
     for arg, value in parameters.items():
