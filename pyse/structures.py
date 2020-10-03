@@ -96,17 +96,47 @@ class URLTree(LookupDict):
         :param dictionaries: a list of tuples (a, b), where a is an HTTP request
             type, and b is a LookupDict of URLs that use that HTTP method. This
             is used to generate the internal _method LookupDict to use as a
-            lookup table. an example input:
+            lookup table. Example:
 
-            TODO FIXME: input example
+            _urls = {
+                "GET": {
+                    "shop": "site.com/shop",
+                    "cart": {
+                        "view": "site.com/cart"
+                    }
+                },
+                "POST": {
+                    "cart": {
+                        "checkout": "site.com/checkout"
+                    }
+                }
+            }
 
-            each node of the tree can be accessed as a property or by subscript:
+            urls = URLTree(
+                dictionaries = [
+                        (method, url_dict) for method, url_dict in _urls.items()
+                    ],
+                name = "urls"
+            )
+
+            each node of the tree can be accessed as a property or by subscript.
+            additionally, both lower- and upper-case names are allowed.
 
                 key                 value
                 -----------------------------------
                 urls.SHOP           "site.com/shop"
+                urls.shop           "site.com/shop"
                 urls['SHOP']        "site.com/shop"
                 urls.cart.CHECKOUT  "site.com/cart/checkout"
+
+            the internal _method lookup dictionary can be accessed by the
+            ``method()`` method to lookup the HTTP request method for an
+            endpoint.
+
+            Example:
+
+                urls.method(urls.shop) -> 'GET'
+                urls.method(urls.cart.checkout) -> 'POST'
 
         :param name: name of the URLTree
         :param method: generate a method dictionary instead for the specified
@@ -141,6 +171,8 @@ class URLTree(LookupDict):
                                 # add to internal method dictionary
                                 setattr(self._method, value, method)
                             else:
+                                # set both uppercase and lowercase keys
+                                setattr(self, key, value)
                                 setattr(self, key.upper(), value)
 
         super(URLTree, self).__init__(name=name)
