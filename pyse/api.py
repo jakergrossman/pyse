@@ -109,22 +109,8 @@ def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=Fa
     :raises ValueError: If `base` is not a valid base filter
     """
     unsafe_string  = "true" if unsafe else "false"
-    url = api_base_url + "filters/create?unsafe=" + unsafe_string
-
-    # append applicable parameters
-    if len(includes) > 0:
-        include_string = ";".join(includes)
-        url = add_url_parameter(url, "include", include_string)
-
-    if len(excludes) > 0:
-        exclude_string = ";".join(excludes)
-        url = add_url_parameter(url, "exclude", exclude_string)
-
-
-    if base is not base_filters.DEFAULT:
-        url = add_url_parameter(url, "base", base)
-
-    filter_json = get_json(url)
+    filter_json = query(queries.filters.CREATE, base=base, includes=includes,
+                        excludes=excludes, unsafe=unsafe_string)
 
     if "error_id" in filter_json:
         raise ValueError(f"{filter_json['error_name']} {filter_json['error_id']}: {filter_json['error_message']}")
