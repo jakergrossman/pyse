@@ -15,7 +15,8 @@ import json
 def get_json(url):
     r = requests.get(url)
 
-    if r.status_code == requests.codes.ok:
+    # will manually handle bad requests (400) when needed
+    if r.status_code == requests.codes.ok or r.status_code == requests.codes.bad:
         j = json.loads(r.text)
         return j
     else:

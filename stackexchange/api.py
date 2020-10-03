@@ -21,7 +21,7 @@ api_base_url = "https://api.stackexchange.com/2.2/"
 def query(site, endpoint, **parameters):
     # FIXME: Defaults, Descriptions
     """
-    Query the Stack Exchange API for questions.
+    Query the Stack Exchange API.
 
     :param site: Stack Exchange site to query
     :param endpoint: URL endpoint of query
@@ -106,6 +106,7 @@ def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=Fa
     """
     unsafe_string  = "true" if unsafe else "false"
     url = api_base_url + "filters/create?unsafe=" + unsafe_string
+
     # append applicable parameters
     if len(includes) > 0:
         include_string = ";".join(includes)
