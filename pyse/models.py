@@ -1,5 +1,5 @@
 """
-stackexchange.models
+pyse.models
 ~~~~~~~~~~~~~~~~~~~~
 
 This module contains the primary objects that power the Stack Exchange API

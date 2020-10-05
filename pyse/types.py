@@ -1,5 +1,5 @@
 """
-stackexchange.types
+pyse.types
 ~~~~~~~~~~~~~~~~~~~
 
 This module contains lookup dictionaries for types of objects in the Stack Exchange API

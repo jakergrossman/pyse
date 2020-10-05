@@ -1,5 +1,5 @@
 """
-stackexchange.utils
+pyse.utils
 ~~~~~~~~~~~~~~~~~~~
 
 This module contains utility functions for the Stack Exchange wrapper

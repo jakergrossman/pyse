@@ -1,5 +1,5 @@
 """
-stackexchange.api
+pyse.api
 ~~~~~~~~~~~~~~~~~
 
 This module implements the Stack Exchange API wrapper.

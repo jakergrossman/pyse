@@ -1,5 +1,5 @@
 """
-stackexchange.structures
+pyse.structures
 ~~~~~~~~~~~~~~~~~~~~
 
 This module contains the structures used in the Stack Exchange API wrapper
