@@ -88,99 +88,50 @@ class LookupDict(dict):
 class URLTree(LookupDict):
     """
     A tree of URL endpoints.
+
+    Two components:
+        A tree of URL endpoints
+        A mapping from URL endpoints to HTTP methods
     """
-    def __init__(self, dictionaries=None, name=None, method=None):
+    def __init__(self, data, name=None):
         """
         Create a new URL Tree
 
-        :param dictionaries: a list of tuples (a, b), where a is an HTTP request
-            type, and b is a LookupDict of URLs that use that HTTP method. This
-            is used to generate the internal _method LookupDict to use as a
-            lookup table. Example:
+        :param data: the input dictionary. each nested dictionary becomes an
+            attribute of the top level dictionary. the leaf nodes of this nested
+            dictionary are tuples (m, u) where:
 
-            _urls = {
-                "GET": {
-                    "shop": "site.com/shop",
-                    "cart": {
-                        "view": "site.com/cart"
-                    }
-                },
-                "POST": {
-                    "cart": {
-                        "checkout": "site.com/checkout"
-                    }
-                }
-            }
+                m is the HTTP method associated with this URL endpoint
+                u is the URL endpoint
 
-            urls = URLTree(
-                dictionaries = [
-                        (method, url_dict) for method, url_dict in _urls.items()
-                    ],
-                name = "urls"
-            )
-
-            each node of the tree can be accessed as a property or by subscript.
-            additionally, both lower- and upper-case names are allowed.
-
-                key                 value
-                -----------------------------------
-                urls.SHOP           "site.com/shop"
-                urls.shop           "site.com/shop"
-                urls['SHOP']        "site.com/shop"
-                urls.cart.CHECKOUT  "site.com/cart/checkout"
-
-            the internal _method lookup dictionary can be accessed by the
-            ``method()`` method to lookup the HTTP request method for an
-            endpoint.
-
-            Example:
-
-                urls.method(urls.shop) -> 'GET'
-                urls.method(urls.cart.checkout) -> 'POST'
-
-        :param name: name of the URLTree
-        :param method: generate a method dictionary instead for the specified
-            URL tree.
-
+        :param name: optional name for root URLTree.
         """
-        self._method = LookupDict()
-        if dictionaries is not None:
-            if len(dictionaries) > 1:
-                for d_method, d in dictionaries:
-                    self.update(URLTree([d]))
-                    self._method.update(URLTree([d], method=d_method)._method)
-            elif len(dictionaries) == 1:
-                dictionary = dictionaries[0]
-
-                # internal variable used for __repr__
-                if dictionary is not None:
-                    for key, value in {k: v for k, v in dictionary.items() if k is not None}.items():
-                        if isinstance(value, dict):
-                            # recursively initialize internal dict
-                            internal_node = URLTree(dictionaries=[value],
-                                                    name=name + '/' + key if
-                                                    name else None,
-                                                    method=method)
-
-                            setattr(self, key, internal_node)
-                            if method is not None:
-                                self._method.update(internal_node._method)
-                        else:
-                            # this is a leaf node of the dictionary,
-                            if method is not None:
-                                # add to internal method dictionary
-                                setattr(self._method, value, method)
-                            else:
-                                # set both uppercase and lowercase keys
-                                setattr(self, key, value)
-                                setattr(self, key.upper(), value)
 
         super(URLTree, self).__init__(name=name)
+        self.methods = LookupDict(name="methods")
+        self.site_required = LookupDict(name="site_required")
+        if isinstance(data, dict):
+            for k, v in data.items():
+                if isinstance(v, dict):
+                    sub_tree = URLTree(
+                        data[k],
+                        name=name + "/" + k if name else None
+                    )
+
+                    # set subtree
+                    setattr(self, k, sub_tree)
+
+                    # set method lookup
+                    self.methods.update(sub_tree.methods)
+                    self.site_required.update(sub_tree.site_required)
+                else:
+                    setattr(self, k, v[1])
+                    setattr(self.methods, v[1], v[0])
 
     def __repr__(self):
-        return f"<url_tree {self._name}>"
+        return f"<url_tree '{self._name}'>"
 
-    def method(self, target):
+    def get_method(self, target):
         """
         Get HTTP method of target
 
@@ -188,4 +139,4 @@ class URLTree(LookupDict):
 
         :returns : HTTP method of target URL
         """
-        return self._method[target]
+        return self.methods[target]
