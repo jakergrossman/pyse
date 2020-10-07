@@ -11,6 +11,8 @@ This module contains utility functions for the Stack Exchange wrapper
 import requests
 import json
 
+from .structures import LookupDict
+
 # FIXME: Don't expose
 def get_json(url):
     r = requests.get(url)
@@ -23,5 +25,5 @@ def get_json(url):
         # raise exception
         r.raise_for_status()
 
-def add_url_parameter(url, parameter, value):
-    return url + "&" + parameter + "=" + str(value)
+def raise_request_exception(e, resp):
+    raise e(f"{resp['error_name']} {resp['error_id']}: {resp['error_message']}")

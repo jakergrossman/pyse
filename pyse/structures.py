@@ -97,9 +97,9 @@ class URLTree(LookupDict):
         """
         Create a new URL Tree
 
-        :param data: the input dictionary. each nested dictionary becomes an
-            attribute of the top level dictionary. the leaf nodes of this nested
-            dictionary are tuples (m, u) where:
+        :param data: the input dictionary. each nested dictionary becomes a
+            subtree. the leaf nodes of this nested dictionary are tuples (m, u)
+            where:
 
                 m is the HTTP method associated with this URL endpoint
                 u is the URL endpoint

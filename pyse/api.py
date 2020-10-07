@@ -12,43 +12,20 @@ import json
 from sys import maxsize
 from string import Formatter
 
-from .utils import get_json, add_url_parameter
+from .utils import get_json, raise_request_exception
 from .types import base_filters, default_query_args
 from .queries import queries
 
 api_base_url = "https://api.stackexchange.com/2.2/"
 
 # FIXME: Needs tests
-def query(endpoint, site=None, **parameters):
-    # FIXME: Defaults, Descriptions
+def query(endpoint, **parameters):
     """
     Query the Stack Exchange API.
 
     :param site: Stack Exchange site to query
     :param endpoint: URL endpoint of query
-    :param parameters: keyword arguments for parameters in API request. if any
-        keyword arguments match a default defined in
-        `stackexchange.types.default_query_args`, it is ignored for the purpose
-        of the query.
-
-    Keyword Arguments:
-        :keyword page: page of results to return. defaults to 1
-        :keyword pagesize: size of each page of results. defaults to 30
-        :keyword fromdate: start of time range for results, inclusive. stored as a
-            unix timestamp
-        :keyword todate: end of time range for results, inclusive. stored
-            as a unix timestamp
-        :keyword order: order to sort results in. one of `desc`, `asc`
-        :keyword sort: criteria with which to sort items.
-            one of `activity`, `votes`, `creation`, `hot`, `week`, `month`.
-            defaults to `activity`
-        :keyword min: minimum value of the field specified by sort.
-            defaults to -sys.maxsize - 1
-        :keyword max: maximum value of the field specified by sort
-            defaults to sys.maxsize
-        :keyword tagged: list of tags to constrain questions to. this is an
-            AND constraint, so all tags in list must match. thus, passing
-            more than 5 flags will always result in zero results
+    :param parameters: keyword arguments for parameters in API request.
 
     :raises ValueError: if the passed URL endpoint expects a specific keyword
         argument, but did not get one. e.g. queries.questions.by_id.ALL
@@ -77,22 +54,24 @@ def query(endpoint, site=None, **parameters):
 
 
     # format endpoint
-    method = queries.method(endpoint)
+    method = queries.methods[endpoint]
     endpoint = endpoint.format(**format_dict)
 
     # build query URL with no parameters
     url = api_base_url + endpoint
 
-    if site is not None:
-        url = add_url_parameter(url, "site", site)
-
-    # append non-default parameters
-    for arg, value in parameters.items():
-        if default_query_args[arg.upper()] != value and arg not in format_args:
-            url = add_url_parameter(url, arg, value)
+    if len(parameters) > 0:
+        param_string = "&".join([param + "=" + str(value) for
+                                 param, value in parameters.items()])
+        url += "?" + param_string
 
     if method == "GET":
-        return get_json(url)
+        j = get_json(url)
+
+    if "error_id" in j:
+        raise_request_exception(ValueError, j)
+
+    return j
 
 def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=False):
     """
@@ -113,6 +92,6 @@ def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=Fa
                         excludes=excludes, unsafe=unsafe_string)
 
     if "error_id" in filter_json:
-        raise ValueError(f"{filter_json['error_name']} {filter_json['error_id']}: {filter_json['error_message']}")
+        raise_request_exception(ValueError, filter_json)
 
     return filter_json["items"][0]["filter"]
