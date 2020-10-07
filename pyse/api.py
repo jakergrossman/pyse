@@ -61,8 +61,14 @@ def query(endpoint, **parameters):
     url = api_base_url + endpoint
 
     if len(parameters) > 0:
-        param_string = "&".join([param + "=" + str(value) for
-                                 param, value in parameters.items()])
+        param_components = []
+        for p,v in {p: v for (p,v) in parameters.items() if
+                    v != default_query_args[p]}.items():
+            if isinstance(v, list):
+                param_components.append((p, ";".join(v)))
+            else:
+                param_components.append((p, v))
+        param_string = "&".join(p+"="+v for p,v in param_components)
         url += "?" + param_string
 
     if method == "GET":
@@ -73,13 +79,13 @@ def query(endpoint, **parameters):
 
     return j
 
-def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=False):
+def create_filter(base=base_filters.DEFAULT, include=[], exclude=[], unsafe=False):
     """
     Creates a filter string
 
     :param base:     base filter
-    :param includes: list of fields to include, in addition to the base filter
-    :param excludes: list of fields to exclude from the base filter
+    :param include: list of fields to include, in addition to the base filter
+    :param exclude: list of fields to exclude from the base filter
     :param unsafe:   whether or not the returned filter
               string is inline-able in HTML without
               script-injection concerns
@@ -88,8 +94,8 @@ def create_filter(base=base_filters.DEFAULT, includes=[], excludes=[], unsafe=Fa
     :raises ValueError: If `base` is not a valid base filter
     """
     unsafe_string  = "true" if unsafe else "false"
-    filter_json = query(queries.filters.CREATE, base=base, includes=includes,
-                        excludes=excludes, unsafe=unsafe_string)
+    filter_json = query(queries.filters.create, base=base, include=include,
+                        exclude=exclude, unsafe=unsafe_string)
 
     if "error_id" in filter_json:
         raise_request_exception(ValueError, filter_json)

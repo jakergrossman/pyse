@@ -36,7 +36,9 @@ A dictionary tree containing the builtin_filters
 base_filters = LookupDict(dictionary=_base_filters, name="base_filters",
                           capitalize_leaves=True)
 
+# TODO: fill dict
 _default_query_args = {
+    "site":     None,
     "page":     1,
     "pagesize": 30,
     "fromdate": 0,
@@ -45,8 +47,12 @@ _default_query_args = {
     "sort":     "activity",
     "min":      -maxsize - 1,
     "max":      maxsize,
-    "tagged":   []
+    "tagged":   [],
+    "include": [],
+    "exclude": [],
+    "unsafe": False,
+    "base":  base_filters.DEFAULT,
 }
 
 default_query_args = LookupDict(dictionary=_default_query_args,
-                              name="default_query_args", capitalize_leaves=True)
+                              name="default_query_args")
