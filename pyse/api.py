@@ -13,7 +13,7 @@ from sys import maxsize
 from string import Formatter
 
 from .utils import get_json, raise_request_exception
-from .types import base_filters, default_query_args
+from .types import filters, default_parameters
 from .queries import queries
 
 api_base_url = "https://api.stackexchange.com/2.2/"
@@ -60,26 +60,34 @@ def query(endpoint, **parameters):
     # build query URL with no parameters
     url = api_base_url + endpoint
 
+    # add parameters
     if len(parameters) > 0:
+        # key, value tuples of non-default parameters
         param_components = []
         for p,v in {p: v for (p,v) in parameters.items() if
-                    v != default_query_args[p]}.items():
+                    v != default_parameters[p]}.items():
+            # join lists with semicolons for API use
             if isinstance(v, list):
                 param_components.append((p, ";".join(v)))
             else:
                 param_components.append((p, v))
-        param_string = "&".join(p+"="+v for p,v in param_components)
-        url += "?" + param_string
+
+        # construct parameter portion of URL.
+        param_string = "?" + "&".join(p+"="+v for p,v in param_components)
+        url += param_string
 
     if method == "GET":
         j = get_json(url)
+    elif method == "POST":
+        raise NotImplementedError("POST not implemented")
 
     if "error_id" in j:
         raise_request_exception(ValueError, j)
 
     return j
 
-def create_filter(base=base_filters.DEFAULT, include=[], exclude=[], unsafe=False):
+# FIXME: Needs tests
+def create_filter(base=filters.DEFAULT, include=[], exclude=[], unsafe=False):
     """
     Creates a filter string
 
@@ -94,7 +102,7 @@ def create_filter(base=base_filters.DEFAULT, include=[], exclude=[], unsafe=Fals
     :raises ValueError: If `base` is not a valid base filter
     """
     unsafe_string  = "true" if unsafe else "false"
-    filter_json = query(queries.filters.create, base=base, include=include,
+    filter_json = query(queries.filters.CREATE, base=base, include=include,
                         exclude=exclude, unsafe=unsafe_string)
 
     if "error_id" in filter_json:

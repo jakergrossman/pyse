@@ -23,9 +23,9 @@ A dictionary tree of User types
 user_classes = LookupDict(dictionary=_user_classes, name="user_classes",
                           capitalize_leaves=True)
 
-_base_filters = {
+_filters = {
     "default": "default",  # default for each query type
-    "withbody": "withbody", # base_filters.DEFAULT + *.body fields
+    "withbody": "withbody", # filters.DEFAULT + *.body fields
     "none": "none",     # No filters
     "total": "total"    # Only the ".total" filter
 }
@@ -33,11 +33,11 @@ _base_filters = {
 """
 A dictionary tree containing the builtin_filters
 """
-base_filters = LookupDict(dictionary=_base_filters, name="base_filters",
+filters = LookupDict(dictionary=_filters, name="filters",
                           capitalize_leaves=True)
 
 # TODO: fill dict
-_default_query_args = {
+_default_parameters = {
     "site":     None,
     "page":     1,
     "pagesize": 30,
@@ -51,8 +51,8 @@ _default_query_args = {
     "include": [],
     "exclude": [],
     "unsafe": False,
-    "base":  base_filters.DEFAULT,
+    "base":  filters.DEFAULT,
 }
 
-default_query_args = LookupDict(dictionary=_default_query_args,
-                              name="default_query_args")
+default_parameters = LookupDict(dictionary=_default_parameters,
+                              name="default_parameters")
