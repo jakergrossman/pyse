@@ -125,7 +125,11 @@ class URLTree(LookupDict):
                     self.methods.update(sub_tree.methods)
                     self.site_required.update(sub_tree.site_required)
                 else:
+                    # upper- and lower-case allowed
                     setattr(self, k.upper(), v[1])
+                    setattr(self, k, v[1])
+
+
                     setattr(self.methods, v[1], v[0])
 
     def __repr__(self):

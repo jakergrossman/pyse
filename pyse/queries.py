@@ -11,15 +11,15 @@ Example::
     >>> pyse.queries.answers.by_id.accept.CAST
     'answers/{id}/accept'
 
-This object also has a `method()` method to lookup the HTTP request method for any
-given endpoint.
+This object also has a lookup dictionary `method` attribute to lookup the HTTP
+request method for any given endpoint.
 
 Example::
 
     >>> import pyse
     >>> pyse.queries.method(pyse.queries.questions.ALL)
     'GET'
-    >>> pyse.queries.method(pyse.queries.answers.by_id.accept.UNDO)
+    >>> pyse.queries.method[pyse.queries.answers.by_id.accept.UNDO]
     'POST'
 
 Both upper- and lower-case versions of the names are allowed. For example,
