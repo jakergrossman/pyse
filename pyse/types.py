@@ -1,6 +1,6 @@
 """
 pyse.types
-~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~
 
 This module contains lookup dictionaries for types of objects in the Stack Exchange API
 
@@ -20,7 +20,7 @@ _user_classes = {
 """
 A dictionary tree of User types
 """
-user_classes = LookupDict(dictionary=_user_classes, name="user_classes",
+user_classes = LookupDict(data=_user_classes, name="user_classes",
                           capitalize_leaves=True)
 
 _filters = {
@@ -31,9 +31,9 @@ _filters = {
 }
 
 """
-A dictionary tree containing the builtin_filters
+A dictionary tree containing the builtin filters
 """
-filters = LookupDict(dictionary=_filters, name="filters",
+filters = LookupDict(data=_filters, name="filters",
                           capitalize_leaves=True)
 
 # TODO: fill dict
@@ -54,5 +54,5 @@ _default_parameters = {
     "base":  filters.DEFAULT,
 }
 
-default_parameters = LookupDict(dictionary=_default_parameters,
+default_parameters = LookupDict(data=_default_parameters,
                               name="default_parameters")

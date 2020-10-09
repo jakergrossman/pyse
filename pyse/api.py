@@ -1,6 +1,6 @@
 """
 pyse.api
-~~~~~~~~~~~~~~~~~
+~~~~~~~~
 
 This module implements the Stack Exchange API wrapper.
 
@@ -12,8 +12,9 @@ import json
 from sys import maxsize
 from string import Formatter
 
-from .utils import get_json, raise_request_exception
+from .structures import LookupDict
 from .types import filters, default_parameters
+from .utils import get_json, raise_request_exception
 from .queries import queries
 
 api_base_url = "https://api.stackexchange.com/2.2/"
@@ -32,11 +33,11 @@ def query(endpoint, **parameters):
         expects an `ids` keyword argument.
     """
 
-    # get format argument of endpoint. e.g. the `{ids}` in questions/`{ids}`
+    # get format arguments of endpoint. e.g. the `{ids}` in questions/`{ids}`
     format_args = [tup[1] for tup in Formatter().parse(endpoint) if tup[1]]
     format_dict = {}
 
-    # if format arguments are missing, throw error
+    # if format arguments are missing, raise exception
     missing_args = [f for f in format_args if f not in parameters.keys()]
     if len(missing_args) > 0:
         if len(missing_args) > 1:
@@ -78,6 +79,8 @@ def query(endpoint, **parameters):
 
     if method == "GET":
         j = get_json(url)
+        j_lookup = LookupDict(data=j, name="response_wrapper")
+        return j_lookup
     elif method == "POST":
         raise NotImplementedError("POST not implemented")
 

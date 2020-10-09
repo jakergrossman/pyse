@@ -28,6 +28,7 @@ API URL endpoint 'questions'.
 """
 
 from .structures import URLTree
+
 _queries = {
     "access_tokens": {
         "inspect": ("GET", "access-tokens/{access_tokens}"),

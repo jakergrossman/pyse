@@ -1,6 +1,6 @@
 """
 pyse.structures
-~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 This module contains the structures used in the Stack Exchange API wrapper
 
@@ -12,23 +12,32 @@ class LookupDict(dict):
     """
     A dictionary lookup object.
     """
-    def __init__(self, dictionary=None, name=None, capitalize_leaves=False):
+    def __init__(self, data=None, name=None, capitalize_leaves=False):
         """
         Create a new LookupDict
 
-        :param dictionary:      dictionary to initialize LookupDict with
+        :param data:      data to initialize LookupDict with
         :param name:            internal name of LookupDict
         :param capitalize_leaves: whether or not to capitalize leaf keys.
         """
         # internal variable used for __repr__
         self._name = name if name else ""
-        if dictionary is not None:
-            for key, value in {k: v for k, v in dictionary.items() if k is not None}.items():
+
+        if data is not None:
+            for key, value in {k: v for k, v in data.items() if k is not None}.items():
                 if isinstance(value, dict):
                     # recursively initialize internal dict
-                    setattr(self, key, LookupDict(dictionary=value, name=name + '/' + key))
+                    setattr(self, key, LookupDict(data=value, name=name + '/' + key))
+                elif isinstance(value, list):
+                    temp_list = []
+                    for item in value:
+                        if isinstance(item, dict):
+                            temp_list.append(LookupDict(data=item, name=name + '/' + key))
+                        else:
+                            temp_list.append(item)
+                    setattr(self, key, temp_list)
                 else:
-                    # this is a leaf node of the dictionary,
+                    # this is a leaf node of the data,
                     setattr(self, key.upper() if capitalize_leaves else key, value)
         super(LookupDict, self).__init__()
 
